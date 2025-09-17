@@ -1,0 +1,209 @@
+/* === ESTILOS GENERALES === */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fdf6f0;
+  color: #333;
+  display: flex;
+  flex-direction: column; /* 👈 en lugar de centrar vertical, acomoda en columna */
+}
+
+
+/* === CONTENEDOR PRINCIPAL === */
+.container {
+  width: 70%;
+  max-width: 900px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  margin: 20px;
+  position: relative;
+}
+
+/* === ENCABEZADO Y LATERALES === */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+h1 {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: 2.5rem;
+  color: #ff6600;
+  font-family: 'Trebuchet MS', sans-serif;
+}
+
+/* Laterales */
+.lateral {
+  width: 400px;
+  height: 200px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* === FECHA Y HORA === */
+#fecha-container {
+  margin-top: 10px; /* separación respecto a la imagen */
+  text-align: right;
+  animation: parpadeo 5s infinite;
+}
+
+#fechaHoy,
+#horaHoy {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ff6600;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+@keyframes parpadeo {
+  0%, 100% { opacity: 1; }
+  70% { opacity: 0.6; }
+}
+
+/* === FORMULARIO === */
+form label {
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+  color: #333;
+}
+
+form input,
+form select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+/* === BOTONES === */
+button {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 25px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+/* Botón Enviar */
+button[type="submit"] {
+  background-color: #ffa64d;
+  color: #fff;
+}
+
+button[type="submit"]:hover {
+  background-color: #ff6600;
+}
+
+/* Botón Reiniciar */
+#resetBtn button {
+  background-color: #ff4d4d;
+  color: #fff;
+}
+
+#resetBtn button:hover {
+  background-color: #cc0000;
+}
+
+/* === RESULTADO === */
+#resultado {
+  margin-top: 30px;
+  padding: 15px;
+  background: #fff3e6;
+  border-left: 6px solid #ff6600;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+
+footer {
+  background: #222;
+  color: #fff;
+  text-align: center;
+  padding: 15px;
+  font-size: 14px;
+  margin-top: 30px;
+}
+
+.redes-sociales {
+  margin-top: 10px;
+}
+
+.redes-sociales a {
+  color: #ccc;
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.redes-sociales a:hover {
+  color: #00aaff;
+}
+
+.redes-sociales a i {
+  margin-right: 6px;
+}
+
+
+
+/* Para que el footer quede siempre abajo y centrado */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* 👈 asegura que empiece desde arriba */
+  padding-top: 20px;       /* 👈 agrega un respiro arriba */
+  box-sizing: border-box;
+}
+
+
+/* === RESPONSIVO PARA CELULARES === */
+@media (max-width: 768px) {
+  .page-wrapper {
+    flex-direction: column;  /* En lugar de lado a lado, uno debajo del otro */
+    align-items: center;
+    padding: 0;
+  }
+
+  /* Laterales arriba */
+  .lateral {
+    width: 100%;
+    height: auto;             /* altura automática */
+    padding-top: 50%;         /* relación de aspecto 2:1 */
+    margin-bottom: 15px;
+    background-size: contain; /* mantiene proporción original */
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 10px;
+  }
+
+  /* Contenedor después de las imágenes */
+  .container {
+    width: 95%;
+    margin: 0 auto 20px auto;
+  }
+}
