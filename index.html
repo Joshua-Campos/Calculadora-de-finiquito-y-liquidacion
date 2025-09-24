@@ -82,19 +82,28 @@
         document.getElementById("horaHoy").textContent = ahora.toLocaleTimeString("es-ES");
       }
 
-     function calcular() {
-    const tipoBaja = document.getElementById("tipoBaja").value;
-    const FI = new Date(document.getElementById("fechaIngreso").value);
-    const FS = new Date(document.getElementById("fechaSalida").value);
+      function calcular() {
+        const tipoBaja = document.getElementById("tipoBaja").value;
 
-    // Ahora el usuario ingresa sueldo semanal
-    const sueldoSemanal = parseFloat(document.getElementById("sd").value);
-    const SD = sueldoSemanal / 7; // lo convertimos a sueldo diario
+        // ✅ Parseo seguro de fechas (evita desfase por zona horaria)
+        const fiVal = document.getElementById("fechaIngreso").value;
+        const fsVal = document.getElementById("fechaSalida").value;
+        function parseInputDate(val) {
+          if (!val) return new Date(NaN);
+          const parts = val.split('-').map(Number); // ["YYYY","MM","DD"]
+          return new Date(parts[0], parts[1] - 1, parts[2]); // año, mesIndex, día
+        }
+        const FI = parseInputDate(fiVal);
+        const FS = parseInputDate(fsVal);
 
-    const DA = parseFloat(document.getElementById("da").value);
-    const DVp = parseFloat(document.getElementById("dvp").value);
-    const PV = parseFloat(document.getElementById("pv").value);
-    const DPen = parseFloat(document.getElementById("dpen").value);
+        // Ahora el usuario ingresa sueldo semanal
+        const sueldoSemanal = parseFloat(document.getElementById("sd").value);
+        const SD = sueldoSemanal / 7; // sueldo diario
+
+        const DA = parseFloat(document.getElementById("da").value);
+        const DVp = parseFloat(document.getElementById("dvp").value);
+        const PV = parseFloat(document.getElementById("pv").value);
+        const DPen = parseFloat(document.getElementById("dpen").value);
 
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
@@ -112,12 +121,6 @@
           return;
         }
 
-        if (FS > hoy) {
-          document.getElementById("resultado").innerHTML = "<b>Error:</b> La fecha de salida no puede ser mayor a la fecha actual.";
-          mostrarBotonReiniciar();
-          return;
-        }
-
         if (FS < FI) {
           document.getElementById("resultado").innerHTML = "<b>Error:</b> La fecha de salida no puede ser anterior a la fecha de ingreso.";
           mostrarBotonReiniciar();
@@ -125,25 +128,36 @@
         }
 
         // Antigüedad
-        const diffMs = FS - FI;
-        const antig_dias = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
         let antig_años = FS.getFullYear() - FI.getFullYear();
         const mesDiff = FS.getMonth() - FI.getMonth();
         if (mesDiff < 0 || (mesDiff === 0 && FS.getDate() < FI.getDate())) { antig_años--; }
         if (antig_años < 0) antig_años = 0;
 
-        // Días trabajados del año para aguinaldo
-        const inicioAnio = new Date(FS.getFullYear(), 0, 1);
-        const baseAguinaldo = FI > inicioAnio ? FI : inicioAnio;
-        let dias_en_el_año = Math.round((FS - baseAguinaldo) / (1000 * 60 * 60 * 24)) + 1;
-        if (dias_en_el_año < 0) dias_en_el_año = 0;
+        // ✅ Aguinaldo proporcional
+        let AguinaldoProp = 0;
+        if (!(FS.getDate() === 1 && FS.getMonth() === 0)) {
+            const inicioAnio = new Date(FS.getFullYear(), 0, 1);
+            const baseAguinaldo = FI > inicioAnio ? FI : inicioAnio;
+            let dias_en_el_año = Math.floor((FS - baseAguinaldo) / (1000 * 60 * 60 * 24));
+            if (dias_en_el_año > 0) {
+                AguinaldoProp = DA * SD * (dias_en_el_año / 365);
+            }
+        } else {
+            AguinaldoProp = 0;
+        }
+
+        // ✅ Tope constitucional para prima de antigüedad (México, art. 162 LFT)
+        const salarioMinimo = 248.93; // salario mínimo general 2025
+        const topeSD = Math.min(SD, salarioMinimo * 2);
+
+        // Prima de antigüedad (aplica si antigüedad >= 15 años)
+        const PrimaAntig = antig_años >= 15 ? topeSD * 12 * antig_años : 0;
 
         // Cálculo de finiquito
         const Vacaciones = DVp * SD;
         const PrimaVac = Vacaciones * (PV / 100);
-        const AguinaldoProp = DA * SD * (dias_en_el_año / 365);
         const SueldoPend = SD * DPen;
-        const Finiquito = Vacaciones + PrimaVac + AguinaldoProp + SueldoPend;
+        const Finiquito = Vacaciones + PrimaVac + AguinaldoProp + SueldoPend + PrimaAntig;
 
         let detalle = `
           <h3>Detalle de Finiquito</h3>
@@ -151,17 +165,16 @@
           Prima vacacional: $${PrimaVac.toFixed(2)}<br>
           Aguinaldo proporcional: $${AguinaldoProp.toFixed(2)}<br>
           Sueldo pendiente: $${SueldoPend.toFixed(2)}<br>
+          Prima antigüedad: $${PrimaAntig.toFixed(2)} ${antig_años < 15 ? "(no aplica)" : ""}<br>
           <b>Total Finiquito:</b> $${Finiquito.toFixed(2)}<br>
         `;
 
         if (tipoBaja === "despido") {
           const Indem3m = SD * 90;
-          const PrimaAntig = antig_años >= 15 ? SD * 12 * antig_años : 0;
           detalle += `
             <h3>Indemnización por Despido</h3>
             Indemnización 3 meses: $${Indem3m.toFixed(2)}<br>
-            Prima antigüedad: $${PrimaAntig.toFixed(2)} ${antig_años < 15 ? "(no aplica)" : ""}<br>
-            <b>Total Despido:</b> $${(Finiquito + Indem3m + PrimaAntig).toFixed(2)}<br>
+            <b>Total Despido:</b> $${(Finiquito + Indem3m).toFixed(2)}<br>
           `;
         }
 
@@ -179,7 +192,7 @@
       function mostrarBotonReiniciar() {
         document.getElementById("resetBtn").innerHTML = `<button onclick="reiniciar()">Reiniciar</button>`;
       }
-    </script>
+</script>
   </div>
 
   <!-- Lateral derecho -->
@@ -199,3 +212,4 @@
 
 </body>
 </html>
+
